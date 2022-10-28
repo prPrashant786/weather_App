@@ -16,12 +16,15 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import com.example.myapplication.Models.WeatherResponse
+import com.example.myapplication.Network.WeatherService
 import com.google.android.gms.location.*
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken
 import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
+import retrofit.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -99,7 +102,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     /*
-    * Rational Dialog Box
+    * Rational Dialog Box for permission
     * Same for every app
     */
     private fun showRationalDialogForPermissions() {
@@ -145,17 +148,54 @@ class MainActivity : AppCompatActivity() {
 
             val longitude = mLastLocation?.longitude
             Log.d("Current Longitude", "$longitude")
-            getLocationWeatherDetails()
+            getLocationWeatherDetails(latitude!!,longitude!!)
         }
     }
-    private fun getLocationWeatherDetails(){
+    private fun getLocationWeatherDetails(latitude : Double,longitude:Double){
         //Check weather internet avialable or not
         if (Constants.isNetworkAvailable(this@MainActivity)) {
-            Toast.makeText(
-                this@MainActivity,
-                "You have connected to the internet. Now you can make an api call.",
-                Toast.LENGTH_SHORT
-            ).show()
+
+            val retrofit : Retrofit = Retrofit.Builder()
+                .baseUrl(Constants.BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+
+            val services : WeatherService = retrofit
+                .create(WeatherService::class.java)
+
+            val listcall : Call<WeatherResponse> = services.getWeather(
+                latitude,longitude,Constants.METRIC_UNIT,Constants.APP_ID
+            )
+
+
+            listcall.enqueue(object : Callback<WeatherResponse>{
+                override fun onResponse(response: Response<WeatherResponse>?, retrofit: Retrofit?) {
+                    if (response!!.isSuccess){
+                        val weatherlist : WeatherResponse = response.body()
+                        Log.i("Response Result","$weatherlist")
+                    }
+                    else {
+                        // If the response is not success then we check the response code.
+                        val sc = response.code()
+                        when (sc) {
+                            400 -> {
+                                Log.e("Error 400", "Bad Request")
+                            }
+                            404 -> {
+                                Log.e("Error 404", "Not Found")
+                            }
+                            else -> {
+                                Log.e("Error", "Generic Error")
+                            }
+                        }
+                    }
+                }
+
+                override fun onFailure(t: Throwable?) {
+                    Log.e("Errorrrrr", t!!.message.toString())
+                }
+
+            })
         } else {
             Toast.makeText(
                 this@MainActivity,

@@ -8,6 +8,10 @@ import android.os.Build
 //To Check that Internet is Avialble or not
 object Constants {
 
+    const val APP_ID : String= "ae27878d1daac49318c38b17f1eabcf1"
+    const val BASE_URL : String= "https://api.openweathermap.org/data/"
+    const val METRIC_UNIT :String= "metric"
+
     fun isNetworkAvailable(context: Context) : Boolean{
         val connectivityManager  = context.
                 getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
