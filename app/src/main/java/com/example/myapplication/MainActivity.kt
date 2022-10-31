@@ -3,6 +3,7 @@ package com.example.myapplication
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -28,6 +29,7 @@ import retrofit.*
 
 class MainActivity : AppCompatActivity() {
 
+    private var mProgressDialog : Dialog? = null
     //Bellow is used to get user current Location
     private lateinit var mFusedLocationClient: FusedLocationProviderClient
 
@@ -167,10 +169,12 @@ class MainActivity : AppCompatActivity() {
                 latitude,longitude,Constants.METRIC_UNIT,Constants.APP_ID
             )
 
+            showCustomProgressDialog()
 
             listcall.enqueue(object : Callback<WeatherResponse>{
                 override fun onResponse(response: Response<WeatherResponse>?, retrofit: Retrofit?) {
                     if (response!!.isSuccess){
+                        hideProgressDialog()
                         val weatherlist : WeatherResponse = response.body()
                         Log.i("Response Result","$weatherlist")
                     }
@@ -192,6 +196,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 override fun onFailure(t: Throwable?) {
+                    hideProgressDialog()
                     Log.e("Errorrrrr", t!!.message.toString())
                 }
 
@@ -204,4 +209,20 @@ class MainActivity : AppCompatActivity() {
             ).show()
         }
     }
+
+    //Show Custom Progress Dialog
+    private fun showCustomProgressDialog() {
+        mProgressDialog = Dialog(this)
+
+        mProgressDialog!!.setContentView(R.layout.dialog_custome_progress)
+
+        //Start the dialog and display it on screen.
+        mProgressDialog!!.show()
+    }
+    private fun hideProgressDialog() {
+        if (mProgressDialog != null) {
+            mProgressDialog!!.dismiss()
+        }
+    }
+
 }
