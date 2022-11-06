@@ -168,7 +168,7 @@
                         android:layout_height="wrap_content"
                         android:gravity="end"
                         android:textColor="@color/primary_text_color"
-                        android:textSize="@dimen/label_text_size"
+                        android:textSize="16sp"
                         android:textStyle="bold"
                         tools:text="Minimum" />
 
